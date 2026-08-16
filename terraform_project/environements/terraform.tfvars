@@ -3,6 +3,11 @@ dev-rg= {
     name="rg-dev-eastjapan"
     location="japaneast"
     }
+    rg2={
+    name="rg-dev-eastjapan"
+    location="japaneast"
+    }
+
 }
 dev-vnet={
     vnet1={
