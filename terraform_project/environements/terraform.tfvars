@@ -4,9 +4,15 @@ dev-rg= {
     location="japaneast"
     }
     rg2={
-    name="rg-dev-eastjapan"
+    name="rg-dev-eastjapan1"
     location="japaneast"
     }
+    rg3={
+    name="rg-dev-eastjapan2"
+    location="japaneast"
+    }
+    
+
 
 }
 dev-vnet={
