@@ -1,0 +1,149 @@
+fmn-jzzy-xwv
+6:52 PM
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  TF_VERSION: "1.15.2"
+  WORKING_DIR: "./terraform_resualble_module_01_08_27/environements"
+
+jobs:
+
+  # =====================================================
+  # Terraform Plan + Security Scanning
+  # =====================================================
+
+  terraform-plan:
+
+    name: Terraform Plan & Security Scan
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # -------------------------------------------------
+      # 1. Checkout Code
+      # -------------------------------------------------
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------
+      # 2. Setup Terraform
+      # -------------------------------------------------
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # -------------------------------------------------
+      # 3. Terraform Format
+      # -------------------------------------------------
+
+      - name: Terraform Format
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform fmt -check -recursive
+
+      # -------------------------------------------------
+      # 4. Terraform Init
+      # -------------------------------------------------
+
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init
+
+      # -------------------------------------------------
+      # 5. Terraform Validate
+      # -------------------------------------------------
+
+      - name: Terraform Validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform validate
+
+      # =================================================
+      # SECURITY SCANNING
+      # =================================================
+
+      # -------------------------------------------------
+      # 6. TFLint
+      # -------------------------------------------------
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v5
+
+      - name: Run TFLint
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          tflint --init
+          tflint
+
+      # -------------------------------------------------
+      # 7. Checkov
+      # -------------------------------------------------
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ env.WORKING_DIR }}
+          framework: terraform
+          soft_fail: false
+
+      # -------------------------------------------------
+      # 8. Gitleaks
+      # -------------------------------------------------
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # =================================================
+      # TERRAFORM PLAN
+      # =================================================
+
+      # -------------------------------------------------
+      # 9. Azure Login
+      # -------------------------------------------------
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+            }
+
+      # -------------------------------------------------
+      # 10. Terraform Plan
+      # -------------------------------------------------
+
+      - name: Terraform Plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform plan \
+            -var-file="terraform.tfvars" \
+            -out=tfplan
+
+      # -------------------------------------------------
+      # 11. Uplo
