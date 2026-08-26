@@ -7,7 +7,7 @@ terraform{
     }
     backend "azurerm"{
         resource_group_name = "alpha"
-        storage_account_name="alpha1993"
+        storage_account_name="alpha19931"
         container_name="javed1993"
         key="remote_backend.tfstate"
     }
