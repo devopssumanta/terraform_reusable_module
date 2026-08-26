@@ -7,6 +7,7 @@ dev-rg= {
     name="rg-dev-eastjapan1"
     location="japaneast"
     }
+    #
     rg3={
     name="rg-dev-eastjapan2"
     location="japaneast"
